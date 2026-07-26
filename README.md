@@ -107,13 +107,13 @@ Cierra sesión y vuelve a entrar (o ejecuta `newgrp plugdev`) para que el grupo 
 ### Color estático (uso principal)
 
 ```bash
-python3 mkrevopro.py FF0000    # Rojo
-python3 mkrevopro.py 00FF00    # Verde
-python3 mkrevopro.py 0000FF    # Azul
-python3 mkrevopro.py FFFFFF    # Blanco
-python3 mkrevopro.py FF8800    # Naranja
-python3 mkrevopro.py FF00FF    # Magenta
-python3 mkrevopro.py 00FFFF    # Cian
+python3 martian.py FF0000    # Rojo
+python3 martian.py 00FF00    # Verde
+python3 martian.py 0000FF    # Azul
+python3 martian.py FFFFFF    # Blanco
+python3 martian.py FF8800    # Naranja
+python3 martian.py FF00FF    # Magenta
+python3 martian.py 00FFFF    # Cian
 ```
 
 Cada cambio escribe en flash ~2-3 veces. Despreciable para uso diario.
@@ -121,11 +121,11 @@ Cada cambio escribe en flash ~2-3 veces. Despreciable para uso diario.
 ### LED individual
 
 ```bash
-python3 mkrevopro.py slot 0 FF0000    # Escape rojo
-python3 mkrevopro.py slot 2 00FF00    # F1 verde
-python3 mkrevopro.py slot 27 FF8800   # Tecla 5 naranja
-python3 mkrevopro.py slot 45 0000FF   # W azul
-python3 mkrevopro.py slot 52 FF0000   # Barra espaciadora roja
+python3 martian.py slot 0 FF0000    # Escape rojo
+python3 martian.py slot 2 00FF00    # F1 verde
+python3 martian.py slot 27 FF8800   # Tecla 5 naranja
+python3 martian.py slot 45 0000FF   # W azul
+python3 martian.py slot 52 FF0000   # Barra espaciadora roja
 ```
 
 El resto de teclas conservan el último color que tenían.
@@ -133,13 +133,13 @@ El resto de teclas conservan el último color que tenían.
 ### Apagar
 
 ```bash
-python3 mkrevopro.py off
+python3 martian.py off
 ```
 
 ### Información
 
 ```bash
-python3 mkrevopro.py status
+python3 martian.py status
 ```
 
 ### Modos hardware (no desgastan flash)
@@ -147,13 +147,13 @@ python3 mkrevopro.py status
 Estos modos los ejecuta el propio chip del teclado. No escriben en flash repetidamente:
 
 ```bash
-python3 mkrevopro.py spectrum              # Ciclo de colores
-python3 mkrevopro.py breathing             # Respiro
-python3 mkrevopro.py breathing FF0000      # Respiro rojo
-python3 mkrevopro.py rainbow               # Arcoíris
-python3 mkrevopro.py snake                 # Serpiente
-python3 mkrevopro.py reactive              # Reacción a teclas
-python3 mkrevopro.py twinkle               # Estrellas
+python3 martian.py spectrum              # Ciclo de colores
+python3 martian.py breathing             # Respiro
+python3 martian.py breathing FF0000      # Respiro rojo
+python3 martian.py rainbow               # Arcoíris
+python3 martian.py snake                 # Serpiente
+python3 martian.py reactive              # Reacción a teclas
+python3 martian.py twinkle               # Estrellas
 ```
 
 Modos disponibles: `spectrum`, `breathing`, `static`, `ripples`, `reactive`, `flash`, `sine`, `raindrops`, `rainbow`, `wheel`, `adorn`, `twinkle`, `shadow`, `snake`.
@@ -161,7 +161,7 @@ Modos disponibles: `spectrum`, `breathing`, `static`, `ripples`, `reactive`, `fl
 ### Sin regla udev
 
 ```bash
-sudo python3 mkrevopro.py FF0000
+sudo python3 martian.py FF0000
 ```
 
 ## Limitaciones
@@ -179,7 +179,7 @@ Esto significa que **cada vez que se cambia un color, brillo o modo, se escribe 
 
 | Uso | Escrituras por cambio | Impacto |
 |-----|-----------------------|---------|
-| Color estático (`python3 mkrevopro.py FF0000`) | ~2-3 escrituras | Despreciable. 10 000 cambios ≈ 27 años si cambias una vez al día |
+| Color estático (`python3 martian.py FF0000`) | ~2-3 escrituras | Despreciable. 10 000 cambios ≈ 27 años si cambias una vez al día |
 | Animación software (1 FPS, 132 LEDs) | 132 escrituras por frame | **130 000 escrituras/día si corre 8h → flash muerta en ~77 días** |
 | Animación software (10 FPS) | 1320 escrituras/s | Flash muerta en **~7 segundos** |
 
