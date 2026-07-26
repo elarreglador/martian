@@ -11,6 +11,7 @@ Controlador RGB para teclado **Mars Gaming MK-Revo Pro** (PID 258a:0016, MCU Sin
 | `<RRGGBB>` | ✅ LEDs personalizados (CM1) |
 | `<modo> [<RRGGBB>]` | ✅ Modo hardware integrado |
 | `slot <n> <RRGGBB>` | ✅ LED individual |
+| `slot` | ✅ Detectar slot al pulsar tecla |
 | `flash-game` | ✅ Modo juego FPS (azul + teclas rojas) |
 | `off` | ✅ Apagar |
 | `status` | ✅ Info |
@@ -125,11 +126,21 @@ Cada cambio escribe en flash ~2-3 veces. Despreciable para uso diario.
 python3 martian.py slot 0 FF0000    # Escape rojo
 python3 martian.py slot 2 00FF00    # F1 verde
 python3 martian.py slot 27 FF8800   # Tecla 5 naranja
-python3 martian.py slot 45 0000FF   # W azul
-python3 martian.py slot 52 FF0000   # Barra espaciadora roja
+python3 martian.py slot 45 0000FF   # Q azul
+python3 martian.py slot 115 FF0000  # Barra espaciadora roja
 ```
 
 El resto de teclas conservan el último color que tenían.
+
+### Detectar slot de una tecla
+
+```bash
+python3 martian.py slot
+```
+
+Espera una pulsación y muestra el número de slot de la tecla. Sirve para averiguar qué número usar con `slot <n> <RRGGBB>` o para la función `flash-game`.
+
+Internamente lee el reporte HID del teclado, extrae el keycode estándar y lo mapea al slot LED mediante un diccionario (`slots.py`).
 
 ### Modo juego FPS (flash-game)
 
@@ -270,5 +281,6 @@ Verifica que las constantes del protocolo sean coherentes en el código fuente:
 | Archivo | Descripción |
 |---------|-------------|
 | `martian.py` | Controlador Python independiente |
+| `slots.py` | Diccionario HID keycode → slot LED |
 | `test_martian.py` | Tests unitarios (24 tests) |
 | `60-mkrevopro.rules` | Regla udev para acceso sin root |

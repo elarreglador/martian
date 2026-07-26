@@ -50,6 +50,8 @@ BUILTIN_MODES = {
     "shadow":   13,     "snake":    14,
 }
 
+from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS
+
 # ── Utilidades ─────────────────────────────────────────────────────────────────
 
 def hex_to_rgb(h):
@@ -71,6 +73,29 @@ def find_hidraw(vid=VENDOR_ID, pid=PRODUCT_ID):
             with open(os.path.join(path, "device", "report_descriptor"), "rb") as f:
                 desc = f.read()
             if bytes([0x85, 0x05]) in desc:
+                return "/dev/" + os.path.basename(path)
+        except OSError:
+            continue
+    return None
+
+
+def find_keyboard_hidraw(vid=VENDOR_ID, pid=PRODUCT_ID):
+    """Busca el hidraw de la interfaz de teclado (no la RGB).
+
+    El teclado tiene dos interfaces:
+    - Interfaz 0: teclado HID estándar (sin Report ID 5)
+    - Interfaz 1: RGB vendor-specific (con Report ID 5)
+    """
+    for path in sorted(glob.glob("/sys/class/hidraw/hidraw*")):
+        try:
+            with open(os.path.join(path, "device", "uevent")) as f:
+                uevent = f.read()
+            if f"HID_ID=0003:{vid:08X}:{pid:08X}" not in uevent:
+                continue
+            with open(os.path.join(path, "device", "report_descriptor"), "rb") as f:
+                desc = f.read()
+            # La interfaz de teclado no tiene Report ID 5
+            if bytes([0x85, 0x05]) not in desc and b'\x09\x06' in desc:
                 return "/dev/" + os.path.basename(path)
         except OSError:
             continue
@@ -249,12 +274,86 @@ class Keyboard:
         self._send_config(buf)
 
 
+# ── Slot finder — detecta qué tecla se pulsa ──────────────────────────────────
+
+def cmd_slot_find():
+    """Espera una pulsación de tecla y muestra su número de slot."""
+    kb_path = find_keyboard_hidraw()
+    if not kb_path:
+        print("Error: no se encuentra la interfaz de teclado")
+        print("Asegúrate de que el teclado está conectado y tienes permisos.")
+        sys.exit(1)
+
+    # Comprobar si el descriptor usa Report ID 1
+    base = os.path.dirname(os.path.dirname(kb_path))
+    uevent_path = os.path.join(base, "device", "report_descriptor")
+    has_report_id = False
+    try:
+        with open(uevent_path.replace("/dev/hidraw", "/sys/class/hidraw/hidraw"), "rb") as f:
+            desc = f.read()
+        has_report_id = bytes([0x85, 0x01]) in desc
+    except OSError:
+        pass
+
+    offset = 1 if has_report_id else 0  # Byte de modifier en el reporte
+
+    fd = os.open(kb_path, os.O_RDONLY)
+    print("Pulsa una tecla...")
+    try:
+        while True:
+            data = os.read(fd, 64)
+            if len(data) < offset + 3:
+                continue
+
+            modifier_byte = data[offset]
+            keycodes = [k for k in data[offset + 2:offset + 8] if k != 0]
+
+            if not keycodes and modifier_byte == 0:
+                continue  # Ninguna tecla pulsada
+
+            resultados = []
+
+            # Buscar en keycodes estándar
+            for kc in keycodes:
+                if kc in HID_TO_SLOT:
+                    slot = HID_TO_SLOT[kc]
+                    if slot not in resultados:
+                        resultados.append(slot)
+                if kc in HID_TO_SLOT_AMBIGUOUS:
+                    for slot in HID_TO_SLOT_AMBIGUOUS[kc]:
+                        if slot not in resultados:
+                            resultados.append(slot)
+
+            # Buscar en modifier byte
+            if modifier_byte:
+                for bit, slot in MODIFIER_SLOTS.items():
+                    if modifier_byte & bit:
+                        if slot not in resultados:
+                            resultados.append(slot)
+
+            if resultados:
+                if len(resultados) == 1:
+                    print(f"Slot: {resultados[0]}")
+                else:
+                    print(f"Slots: {', '.join(str(s) for s in resultados)}")
+            else:
+                codigos = ', '.join(f'0x{kc:02X}' for kc in keycodes)
+                if modifier_byte:
+                    codigos += f' mod=0x{modifier_byte:02X}'
+                print(f"Tecla no reconocida: {codigos}")
+
+            return
+    finally:
+        os.close(fd)
+
+
 # ── Interfaz de línea de comandos ─────────────────────────────────────────────
 
 def print_usage(prog):
     print(f"Uso: {prog} <RRGGBB>                  LEDs personalizados (CM1)")
     print(f"     {prog} <modo> [<RRGGBB>]         Modo hardware")
     print(f"     {prog} slot <n> <RRGGBB>         LED individual")
+    print(f"     {prog} slot                      Detectar slot al pulsar tecla")
     print(f"     {prog} flash-game                Modo juego FPS")
     print(f"     {prog} off                       Apagar")
     print(f"     {prog} status                    Información")
@@ -262,14 +361,19 @@ def print_usage(prog):
 
 
 def main():
+    if len(sys.argv) < 2:
+        print_usage(sys.argv[0])
+        return
+
+    arg = sys.argv[1].lower()
+
+    # Slot finder: no necesita el Keyboard
+    if arg == "slot" and len(sys.argv) == 2:
+        cmd_slot_find()
+        return
+
     kb = Keyboard()
     try:
-        if len(sys.argv) < 2:
-            print_usage(sys.argv[0])
-            return
-
-        arg = sys.argv[1].lower()
-
         if arg == "off":
             kb.set_mode_off()
             print("Done")
