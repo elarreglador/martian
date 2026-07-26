@@ -187,7 +187,7 @@ class Keyboard:
         buf[c + LED_COUNT * 2 + slot] = r
         self._send_config(buf)
 
-    def set_off(self):
+    def set_mode_off(self):
         """Apaga todos los LEDs (modo OFF). Una escritura."""
         cfg = bytearray(self.read_modes())
         cfg[PER_KEY_MODE_IDX] = 0
@@ -241,7 +241,7 @@ def main():
         arg = sys.argv[1].lower()
 
         if arg == "off":
-            kb.set_off()
+            kb.set_mode_off()
             print("Done")
 
         elif arg == "status":
