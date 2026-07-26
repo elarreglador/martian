@@ -11,6 +11,7 @@ Controlador RGB para teclado **Mars Gaming MK-Revo Pro** (PID 258a:0016, MCU Sin
 | `<RRGGBB>` | ✅ LEDs personalizados (CM1) |
 | `<modo> [<RRGGBB>]` | ✅ Modo hardware integrado |
 | `slot <n> <RRGGBB>` | ✅ LED individual |
+| `flash-game` | ✅ Modo juego FPS (azul + teclas rojas) |
 | `off` | ✅ Apagar |
 | `status` | ✅ Info |
 
@@ -129,6 +130,15 @@ python3 martian.py slot 52 FF0000   # Barra espaciadora roja
 ```
 
 El resto de teclas conservan el último color que tenían.
+
+### Modo juego FPS (flash-game)
+
+```bash
+python3 martian.py flash-game
+```
+
+Fondo azul (`0000FF`) con teclas WASD, ESC, Space, Left Shift, cursores y Delete en rojo (`FF0000`).
+2 escrituras en flash.
 
 ### Apagar
 

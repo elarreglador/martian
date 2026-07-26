@@ -220,12 +220,42 @@ class Keyboard:
         self._send_config(cfg)
 
 
+    def set_flash_game(self):
+        """Fondo azul (0000FF) con teclas WASD+ESC+Space+Shift+Arrows+Delete en rojo (FF0000).
+
+        2 escrituras en flash (modo + colores).
+        """
+        red_slots = [0, 46, 67, 68, 69, 88, 115, 59, 104, 125, 126, 127]
+
+        self.set_mode_off()
+        cfg = bytearray(self.read_modes())
+        cfg[PER_KEY_MODE_IDX] = 1
+        cfg[CURRENT_MODE_IDX] = MODE_PER_KEY
+        cfg[CURRENT_MODE2_IDX] = 0x20
+        self._send_config(cfg)
+        time.sleep(0.25)
+
+        buf = bytearray(self.read_per_led(0))
+        c = COLORS_START
+        for i in range(LED_COUNT):
+            if i in red_slots:
+                buf[c + i] = 0x00                    # B
+                buf[c + LED_COUNT + i] = 0x00        # G
+                buf[c + LED_COUNT * 2 + i] = 0xFF    # R
+            else:
+                buf[c + i] = 0xFF                    # B
+                buf[c + LED_COUNT + i] = 0x00        # G
+                buf[c + LED_COUNT * 2 + i] = 0x00    # R
+        self._send_config(buf)
+
+
 # ── Interfaz de línea de comandos ─────────────────────────────────────────────
 
 def print_usage(prog):
     print(f"Uso: {prog} <RRGGBB>                  LEDs personalizados (CM1)")
     print(f"     {prog} <modo> [<RRGGBB>]         Modo hardware")
     print(f"     {prog} slot <n> <RRGGBB>         LED individual")
+    print(f"     {prog} flash-game                Modo juego FPS")
     print(f"     {prog} off                       Apagar")
     print(f"     {prog} status                    Información")
     print("Modos hardware: " + ", ".join(sorted(BUILTIN_MODES)))
@@ -253,6 +283,10 @@ def main():
             perled = bytearray(kb.read_per_led(0))
             non_zero = sum(1 for i in range(COLORS_START, PAYLOAD_LEN) if perled[i])
             print(f"  bytes de color no-cero        = {non_zero}")
+
+        elif arg == "flash-game":
+            kb.set_flash_game()
+            print("Done")
 
         elif arg == "slot":
             if len(sys.argv) < 4:
