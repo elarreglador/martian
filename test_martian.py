@@ -11,6 +11,7 @@ from slots import (
     HID_TO_SLOT,
     HID_TO_SLOT_AMBIGUOUS,
     MODIFIER_SLOTS,
+    WIDE_KEY_PAIRS,
 )
 
 
@@ -173,6 +174,16 @@ class TestHidToSlot(unittest.TestCase):
         """Numpad Enter (0x58) tiene dos slots."""
         self.assertIn(0x58, HID_TO_SLOT_AMBIGUOUS)
         self.assertEqual(len(HID_TO_SLOT_AMBIGUOUS[0x58]), 2)
+
+    def test_wide_key_pairs_valid(self):
+        for a, b in WIDE_KEY_PAIRS.items():
+            self.assertIn(b, WIDE_KEY_PAIRS)
+            self.assertEqual(WIDE_KEY_PAIRS[b], a)
+
+    def test_wide_key_pairs_in_range(self):
+        for slot in WIDE_KEY_PAIRS:
+            self.assertGreaterEqual(slot, 0)
+            self.assertLess(slot, LED_COUNT)
 
     def test_numpad_plus_ambiguous(self):
         """Numpad + (0x57) tiene dos slots."""

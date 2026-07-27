@@ -50,7 +50,7 @@ BUILTIN_MODES = {
     "shadow":   13,     "snake":    14,
 }
 
-from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS
+from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS, WIDE_KEY_PAIRS
 
 # ── Utilidades ─────────────────────────────────────────────────────────────────
 
@@ -206,10 +206,14 @@ class Keyboard:
         time.sleep(0.25)
 
         buf = bytearray(self.read_per_led(0))
+        slots = {slot}
+        if slot in WIDE_KEY_PAIRS:
+            slots.add(WIDE_KEY_PAIRS[slot])
         c = COLORS_START
-        buf[c + slot] = b
-        buf[c + LED_COUNT + slot] = g
-        buf[c + LED_COUNT * 2 + slot] = r
+        for s in slots:
+            buf[c + s] = b
+            buf[c + LED_COUNT + s] = g
+            buf[c + LED_COUNT * 2 + s] = r
         self._send_config(buf)
 
     def set_mode_off(self):
