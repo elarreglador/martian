@@ -1,3 +1,5 @@
+![Martian](images/banner.png)
+
 # Martian — Documentación técnica
 
 ## Hardware

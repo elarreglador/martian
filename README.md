@@ -1,3 +1,5 @@
+![Martian](images/banner.png)
+
 # Martian — RGB para tu Mars Gaming MK-Revo Pro en Linux
 
 Martian controla la iluminación LED del teclado **Mars Gaming MK-Revo Pro**
@@ -91,6 +93,9 @@ pip install pystray Pillow
 
 En GNOME Wayland necesitas la extensión
 [AppIndicator](https://extensions.gnome.org/extension/615/appindicator-support/).
+
+![Menú principal del icono en la bandeja](images/tray-menu.png)
+![Submenú de modos](images/tray-submenu.png)
 
 ##  Modos personalizados (archivos .txt)
 

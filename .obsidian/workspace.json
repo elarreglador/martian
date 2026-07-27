@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "TECH-README.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "TECH-README"
+              "title": "README"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "TECH-README.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de TECH-README"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "TECH-README.md",
+                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Enlaces salientes de TECH-README"
+              "title": "Enlaces salientes de README"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "TECH-README.md",
+                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Esquema de TECH-README"
+              "title": "Esquema de README"
             }
           }
         ]
@@ -185,7 +185,14 @@
   },
   "active": "ae61455960bd0250",
   "lastOpenFiles": [
+    "TECH-README.md",
     "README.md",
-    "TECH-README.md"
+    "images/banner.png",
+    "images/banner.xcf",
+    "images/tray-submenu.png",
+    "images/tray-menu.png",
+    "images",
+    "Captura desde 2026-07-27 15-26-19.png",
+    "Captura desde 2026-07-27 15-25-59.png"
   ]
 }
