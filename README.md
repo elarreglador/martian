@@ -1,155 +1,68 @@
-# Martian — Mars Gaming MK-Revo Pro RGB Controller for Linux
+# Martian — RGB para tu Mars Gaming MK-Revo Pro en Linux
 
-Controlador RGB para teclado **Mars Gaming MK-Revo Pro** (PID 258a:0016, MCU Sinowealth SH68F90).
+Martian controla la iluminación LED del teclado **Mars Gaming MK-Revo Pro**
+(258a:0016) desde Linux. Sin software de Windows, sin OpenRGB, sin vueltas.
 
-## Estado
-
-✅ **Funcional** — Control completo de LEDs por software mediante protocolo flash-save.
-
-| Comando | Estado |
-|---------|--------|
-| `<RRGGBB>` | ✅ LEDs personalizados (CM1) |
-| `<modo> [<RRGGBB>]` | ✅ Modo hardware integrado |
-| `slot <n> <RRGGBB>` | ✅ LED individual |
-| `slot` | ✅ Detectar slot al pulsar tecla |
-| `flash-game` | ✅ Modo juego FPS (azul + teclas rojas) |
-| `off` | ✅ Apagar |
-| `status` | ✅ Info |
-
-## Protocolo
-
-### Hardware
-
-- **VID/PID**: `258a:0016` ("BY Tech Usb Gaming Keyboard")
-- **MCU**: Sinowealth SH68F90 (8051)
-- **Interfaz HID**: 2 interfaces:
-  - Interface 0 (`/dev/hidraw1`): Teclado estándar (Report 1)
-  - Interface 1 (`/dev/hidraw2`): RGB, Usage Page 0xFF00 (Reports 3, 5, 6, 7)
-- **LEDs**: 132 (formato BGR planar), matriz 6×22
-- **Modos**: 14 hardware + 5 personalizados (Custom CM1–CM5)
-
-### ioctl
-
-| Función | Dirección | Tipo | NR | Fórmula |
-|---------|-----------|------|----|---------|
-| `HIDIOCSFEATURE(len)` | 3 (WRITE\|READ) | `'H'` (0x48) | 0x06 | `(3<<30) \| (len<<16) \| (0x48<<8) \| 0x06` |
-| `HIDIOCGFEATURE(len)` | 3 (WRITE\|READ) | `'H'` (0x48) | 0x07 | `(3<<30) \| (len<<16) \| (0x48<<8) \| 0x07` |
-
-**Importante**: Ambos ioctl requieren `dir=3` (WRITE|READ). Usar `dir=2` (HIDIOCGFEATURE) o `dir=1` (HIDIOCSFEATURE) produce EINVAL.
-
-### Comandos (6 bytes, Report 5 SET_FEATURE)
-
-| Comando | Bytes | Descripción |
-|---------|-------|-------------|
-| Leer modos | `05 83 00 00 00 00` | Tabla de modos (~80 bytes respuesta) |
-| Leer presets color | `05 88 A8 00 40 00` | Colores predefinidos por modo (1032 bytes) |
-| Leer per-led CM1/2 | `05 89 AC 00 40 00` | Colores por tecla CM1/2 (1032 bytes) |
-| Leer per-led CM3/4 | `05 89 B0 00 40 00` | Colores por tecla CM3/4 (1032 bytes) |
-| Leer per-led CM5 | `05 89 B4 00 40 00` | Colores por tecla CM5 (1032 bytes) |
-
-**Init** (`05 01 AA BB 2F 3E`) no se usa — resetea el teclado a ISP bootloader.
-
-### Secuencia
-
-```
-1. SET_FEATURE(Report 5, cmd=6 bytes)   → comando
-2. GET_FEATURE(Report 6, 1032 bytes)    ← leer configuración actual
-3. Modificar bytes en el buffer
-4. SET_FEATURE(Report 6, 1032 bytes)    → escribir configuración modificada
-```
-
-### Buffer (1032 bytes, Report 6)
-
-| Offset | Tamaño | Descripción |
-|--------|--------|-------------|
-| 0 | 1 | Report ID (0x06) |
-| 1 | 1 | Status (bit 7 = flag, **limpiar** antes de reenviar) |
-| 2–5 | 4 | Dirección flash (copiar del comando original) |
-| 6–7 | 2 | ? (rellenar con 0) |
-| 8+ | 396 | Colores BGR planar (132 LEDs × 3) |
-
-CM2/CM4 usan segunda mitad del array de colores (offset 8 + 396).
-
-Colores: `buf[8 + i] = Blue[i]`, `buf[8 + 132 + i] = Green[i]`, `buf[8 + 264 + i] = Red[i]`
-
-### Mapeo modo personalizado
-
-| Byte | Valor | Significado |
-|------|-------|-------------|
-| `[20]` | `0x01` | Per-key activado |
-| `[21]` | `0x0F` | `MODE_PER_KEY` |
-| `[22]` | `0x20 \| preset` | preset 0–4 = CM1–CM5 |
-
-## Instalación
-
-### 1. Requisitos
-
-- Python 3.8+
-- Permisos de escritura en `/dev/hidraw2` (ver udev más abajo)
-
-### 2. Descargar
+## ⚡ Inicio rápido
 
 ```bash
-git clone <repo> ~/dev/martian
+git clone https://github.com/elarreglador/martian.git ~/dev/martian
 cd ~/dev/martian
-```
-
-### 3. Regla udev (opcional, para evitar sudo)
-
-```bash
 sudo cp 60-mkrevopro.rules /etc/udev/rules.d/
-sudo udevadm control --reload-rules
-sudo udevadm trigger
+sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-Cierra sesión y vuelve a entrar (o ejecuta `newgrp plugdev`) para que el grupo `plugdev` tenga efecto.
+Cierra sesión y vuelve a entrar (o `newgrp plugdev`). Ya puedes usar el
+teclado sin sudo.
 
-## Uso
-
-### Color estático (uso principal)
+##  Uso básico
 
 ```bash
-python3 martian.py FF0000    # Rojo
-python3 martian.py 00FF00    # Verde
-python3 martian.py 0000FF    # Azul
-python3 martian.py FFFFFF    # Blanco
+python3 martian.py FF0000    # Todo en rojo
+python3 martian.py 00FF00    # Todo en verde
+python3 martian.py 0000FF    # Todo en azul
 python3 martian.py FF8800    # Naranja
-python3 martian.py FF00FF    # Magenta
-python3 martian.py 00FFFF    # Cian
+python3 martian.py FFFFFF    # Blanco
 ```
 
-Cada cambio escribe en flash ~2-3 veces. Despreciable para uso diario.
+Cada cambio escribe en la memoria flash del teclado (~2-3 escrituras).
+Para uso normal (cambiar el color de vez en cuando) no hay problema.
+
+### Modos hardware (no desgastan flash)
+
+Estos los ejecuta el propio chip del teclado. No escriben en flash:
+
+```bash
+python3 martian.py spectrum
+python3 martian.py breathing
+python3 martian.py breathing FF0000   # respiro en rojo
+python3 martian.py rainbow
+python3 martian.py snake
+python3 martian.py reactive
+python3 martian.py twinkle
+```
+
+Modos disponibles: `spectrum`, `breathing`, `static`, `ripples`, `reactive`,
+`flash`, `sine`, `raindrops`, `rainbow`, `wheel`, `adorn`, `twinkle`,
+`shadow`, `snake`.
 
 ### LED individual
 
 ```bash
-python3 martian.py slot 0 FF0000    # Escape rojo
-python3 martian.py slot 2 00FF00    # F1 verde
-python3 martian.py slot 27 FF8800   # Tecla 5 naranja
-python3 martian.py slot 45 0000FF   # Q azul
-python3 martian.py slot 115 FF0000  # Barra espaciadora roja
+python3 martian.py slot 0 FF0000    # Escape en rojo
+python3 martian.py slot 2 00FF00    # F1 en verde
+python3 martian.py slot 45 0000FF   # Q en azul
+python3 martian.py slot 115 FF0000  # Barra espaciadora en rojo
 ```
 
-El resto de teclas conservan el último color que tenían.
-
-### Detectar slot de una tecla
+### Detectar qué tecla es cada slot
 
 ```bash
 python3 martian.py slot
 ```
 
-Espera una pulsación y muestra el número de slot de la tecla. Sirve para averiguar qué número usar con `slot <n> <RRGGBB>` o para la función `flash-game`.
-
-Internamente lee el reporte HID del teclado, extrae el keycode estándar y lo mapea al slot LED mediante un diccionario (`slots.py`).
-
-### Modo juego FPS (flash-game)
-
-```bash
-python3 martian.py flash-game
-```
-
-Fondo azul (`0000FF`) con teclas WASD, ESC, Space, Left Shift, cursores y Delete en rojo (`FF0000`).
-2 escrituras en flash.
+Pulsa una tecla y te dice su número de slot. Sirve para averiguar qué número
+usar con `slot <n> <RRGGBB>`.
 
 ### Apagar
 
@@ -157,130 +70,95 @@ Fondo azul (`0000FF`) con teclas WASD, ESC, Space, Left Shift, cursores y Delete
 python3 martian.py off
 ```
 
-### Información
+### Información del teclado
 
 ```bash
 python3 martian.py status
 ```
 
-### Modos hardware (no desgastan flash)
-
-Estos modos los ejecuta el propio chip del teclado. No escriben en flash repetidamente:
+### Icono en la bandeja del sistema
 
 ```bash
-python3 martian.py spectrum              # Ciclo de colores
-python3 martian.py breathing             # Respiro
-python3 martian.py breathing FF0000      # Respiro rojo
-python3 martian.py rainbow               # Arcoíris
-python3 martian.py snake                 # Serpiente
-python3 martian.py reactive              # Reacción a teclas
-python3 martian.py twinkle               # Estrellas
+python3 martian.py tray
 ```
 
-Modos disponibles: `spectrum`, `breathing`, `static`, `ripples`, `reactive`, `flash`, `sine`, `raindrops`, `rainbow`, `wheel`, `adorn`, `twinkle`, `shadow`, `snake`.
-
-### Sin regla udev
+Pone un icono (cohete  ) en la bandeja con menús para cambiar de modo y
+apagar LEDs. Requiere `pystray` y `Pillow`:
 
 ```bash
-sudo python3 martian.py FF0000
+pip install pystray Pillow
 ```
 
-## Limitaciones
+En GNOME Wayland necesitas la extensión
+[AppIndicator](https://extensions.gnome.org/extension/615/appindicator-support/).
 
-### Flash-save: cada cambio desgasta la memoria flash
+##  Modos personalizados (archivos .txt)
 
-El teclado **no tiene memoria RAM para los LEDs**. La iluminación se guarda en **memoria flash NOR** interna del microcontrolador SH68F90.
+Puedes crear tus propias configuraciones de color en la carpeta `modes/`.
+Cada archivo `.txt` es un modo nuevo que aparece como comando.
 
-Esto significa que **cada vez que se cambia un color, brillo o modo, se escribe en la flash**. Una escritura en flash:
+### Modos incluidos
 
-- Tarda ~50-80ms (el teclado no responde durante ese tiempo)
-- Consume uno de los ~10 000 ciclos de borrado/escritura de la flash
+| Modo | Descripción |
+|------|-------------|
+| `flash-game` | Fondo azul, WASD/cursores/Shift/Espace/Supr en rojo |
+| `flash-term` | Terminal clásica: fondo negro, letras verde fosforito |
+| `flash-vscode` | Tema oscuro VS Code: azul código, números cálidos |
+| `flash-opencode` | Tema oscuro opencode: cian, coral, amarillo |
+| `flash-writer` | Fondo rojo, letras azules, cursores naranja |
+
+### Crear un modo propio
+
+Crea `modes/mi-modo.txt`:
+
+```txt
+# Mi modo chulo
+bg=1E1E1E
+
+w=FF0000
+a=00FF00
+s=0000FF
+d=FFFFFF
+
+enter=FF8800
+space=FF8800
+```
+
+- `bg=RRGGBB` — color de fondo (todas las teclas no listadas)
+- `tecla=RRGGBB` — color para una tecla concreta
+- Los nombres de tecla válidos son los del diccionario KEY_TO_HID
+- Las líneas con `#` son comentarios
+
+Al ejecutar `python3 martian.py mi-modo` se aplica automáticamente.
+
+## ⚠️ Lo que hay que saber
+
+### Cada cambio desgasta la flash
+
+Este teclado **no tiene RAM para LEDs**. La iluminación se guarda en memoria
+flash NOR. Cada cambio de color es una escritura en flash (~50-80ms).
 
 **Consecuencias prácticas**:
+- Cambiar el color una vez al día: **27 años** de vida útil
+- Animaciones software que cambien LEDs constantemente: **la flash muere en
+  días o segundos**
+- Por eso no hay animaciones por software. No es una limitación del código,
+  es física del hardware.
 
-| Uso | Escrituras por cambio | Impacto |
-|-----|-----------------------|---------|
-| Color estático (`python3 martian.py FF0000`) | ~2-3 escrituras | Despreciable. 10 000 cambios ≈ 27 años si cambias una vez al día |
-| Animación software (1 FPS, 132 LEDs) | 132 escrituras por frame | **130 000 escrituras/día si corre 8h → flash muerta en ~77 días** |
-| Animación software (10 FPS) | 1320 escrituras/s | Flash muerta en **~7 segundos** |
+### No tiene modo directo
 
-Por eso **las animaciones por software están desactivadas**. No es un bug del código — es una limitación física del hardware.
+Algunos teclados tienen un modo "directo" donde los LEDs se controlan por
+RAM. Este no lo implementa. Todas las operaciones pasan por flash.
 
-### Sin modo directo (real-time)
+### No ejecutar el comando Init
 
-Algunos teclados gaming tienen un modo "directo" donde los LEDs se controlan por RAM y los cambios no persisten ni desgastan la flash. Este teclado **no implementa ese modo**. Todas las operaciones pasan por flash.
+Si ves código por ahí que envía `05 01 AA BB 2F 3E`, **no lo uses**. Eso
+inicia el bootloader ISP y el teclado deja de funcionar hasta que lo
+desconectes y reconectes.
 
-### No enviar comando Init (`05 01 AA BB 2F 3E`)
+##  Para desarrolladores
 
-Inicia el bootloader ISP, no una inicialización normal. El teclado deja de funcionar como HID hasta que se desconecte y reconecte.
+Si quieres entender el protocolo, el mapeo de teclas, o contribuir al
+código, mira la documentación técnica:
 
-### OpenRGB CLI bug
-
-`DeviceUpdateMode()` en OpenRGB sobreescribe los colores con `GetPerLedColors()`, anulando el parámetro `-c`.
-
-## OpenRGB
-
-El fork de [glooom](https://gitlab.com/glooom/OpenRGB) detecta el teclado con `-DUSE_HID_USAGE`.
-Los cambios de modo funcionan, pero los colores por LED requieren usar la GUI (no la CLI).
-
-## Tests
-
-```bash
-python3 -m unittest test_martian -v
-```
-
-24 tests, cero dependencias externas (solo `unittest` de la stdlib). No requieren el teclado conectado.
-
-### `TestHexToRgb` — 16 tests
-
-Prueba `hex_to_rgb(h)`, que convierte un string hex a tupla `(R, G, B)`.
-
-**11 casos válidos**, cada uno verifica con `assertEqual`:
-
-| Test | Entrada | Esperado | Qué prueba |
-|------|---------|----------|------------|
-| `test_red` | `FF0000` | `(255, 0, 0)` | Sólo canal R |
-| `test_green` | `00FF00` | `(0, 255, 0)` | Sólo canal G |
-| `test_blue` | `0000FF` | `(0, 0, 255)` | Sólo canal B |
-| `test_white` | `FFFFFF` | `(255, 255, 255)` | Todos al máximo |
-| `test_black` | `000000` | `(0, 0, 0)` | Todos a 0 |
-| `test_orange` | `FF8800` | `(255, 136, 0)` | Valor intermedio |
-| `test_magenta` | `FF00FF` | `(255, 0, 255)` | Sólo R y B |
-| `test_cyan` | `00FFFF` | `(0, 255, 255)` | Sólo G y B |
-| `test_lowercase` | `ff0000` | `(255, 0, 0)` | Minúsculas |
-| `test_mixed_case` | `FfAa00` | `(255, 170, 0)` | Mayúsculas + minúsculas |
-| `test_with_hash` | `#FF0000` | `(255, 0, 0)` | `#` opcional |
-
-**5 casos inválidos**, cada uno verifica que lanza `ValueError` con `assertRaises`:
-
-| Test | Entrada | Por qué falla |
-|------|---------|---------------|
-| `test_invalid_short` | `FFF` | 3 caracteres, no 6 |
-| `test_invalid_long` | `FFFFFFFF` | 8 caracteres, no 6 |
-| `test_invalid_chars` | `ZZZZZZ` | `Z` no es hex |
-| `test_empty` | `` | Vacío |
-| `test_only_hash` | `#` | Sólo `#`, sin dígitos |
-
-### `TestConstants` — 8 tests
-
-Verifica que las constantes del protocolo sean coherentes en el código fuente:
-
-| Test | Qué comprueba |
-|------|---------------|
-| `test_builtin_modes_count` | `BUILTIN_MODES` tiene exactamente 14 entradas |
-| `test_builtin_modes_have_all_ids` | Todos los IDs están entre 1 y 14 |
-| `test_builtin_modes_no_duplicates` | Ningún ID se repite |
-| `test_payload_led_fit` | Los 132 LEDs en BGR caben en 1032 bytes |
-| `test_led_count_positive` | `LED_COUNT > 0` |
-| `test_payload_large_enough` | `PAYLOAD_LEN >= 256` (mínimo razonable) |
-| `test_colors_start_aligned` | `COLORS_START >= 8` (espacio para cabecera) |
-| `test_all_mode_names_lowercase` | Todos los nombres están en minúsculas (coinciden con `input.lower()` en CLI) |
-
-## Archivos
-
-| Archivo | Descripción |
-|---------|-------------|
-| `martian.py` | Controlador Python independiente |
-| `slots.py` | Diccionario HID keycode → slot LED |
-| `test_martian.py` | Tests unitarios (24 tests) |
-| `60-mkrevopro.rules` | Regla udev para acceso sin root |
+→ [TECH-README.md](TECH-README.md)
