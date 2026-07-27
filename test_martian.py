@@ -2,6 +2,7 @@
 import unittest
 from martian import (
     hex_to_rgb,
+    parse_mode_file,
     LED_COUNT,
     PAYLOAD_LEN,
     COLORS_START,
@@ -189,6 +190,47 @@ class TestHidToSlot(unittest.TestCase):
         """Numpad + (0x57) tiene dos slots."""
         self.assertIn(0x57, HID_TO_SLOT_AMBIGUOUS)
         self.assertEqual(len(HID_TO_SLOT_AMBIGUOUS[0x57]), 2)
+
+
+class TestModeParser(unittest.TestCase):
+
+    def test_bg_and_keys(self):
+        lines = ["bg=FF0000", "w=00FF00", "a=0000FF"]
+        mode = parse_mode_file(lines)
+        self.assertEqual(mode["bg"], "FF0000")
+        self.assertEqual(mode["keys"]["w"], "00FF00")
+        self.assertEqual(mode["keys"]["a"], "0000FF")
+
+    def test_comment_and_blank(self):
+        lines = ["# comment", "", "bg=000000", "  ", "# another"]
+        mode = parse_mode_file(lines)
+        self.assertEqual(mode["bg"], "000000")
+        self.assertEqual(mode["keys"], {})
+
+    def test_no_bg(self):
+        mode = parse_mode_file(["w=FF0000"])
+        self.assertIsNone(mode["bg"])
+        self.assertEqual(mode["keys"], {"w": "FF0000"})
+
+    def test_invalid_color(self):
+        with self.assertRaises(ValueError):
+            parse_mode_file(["bg=XYZ"])
+
+    def test_unknown_key(self):
+        with self.assertRaises(ValueError):
+            parse_mode_file(["notarealkey=FF0000"])
+
+    def test_invalid_key_color(self):
+        with self.assertRaises(ValueError):
+            parse_mode_file(["w=XYZ"])
+
+    def test_flash_game_file(self):
+        with open("modes/flash-game.txt") as f:
+            mode = parse_mode_file(f)
+        self.assertEqual(mode["bg"], "0000FF")
+        expected = {"esc", "w", "a", "s", "d", "lshift", "space",
+                    "del", "up", "down", "left", "right"}
+        self.assertEqual(set(mode["keys"]), expected)
 
 
 if __name__ == "__main__":

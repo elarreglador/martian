@@ -2,6 +2,7 @@
 import fcntl
 import glob
 import os
+import re
 import sys
 import time
 
@@ -50,7 +51,7 @@ BUILTIN_MODES = {
     "shadow":   13,     "snake":    14,
 }
 
-from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS, WIDE_KEY_PAIRS
+from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS, WIDE_KEY_PAIRS, KEY_TO_HID
 
 # ── Utilidades ─────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,53 @@ def hex_to_rgb(h):
     if len(h) != 6 or not all(c in "0123456789abcdefABCDEF" for c in h):
         raise ValueError(f"Invalid hex color: {h!r}")
     return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+
+HEX_RE = re.compile(r'^[0-9a-fA-F]{6}$')
+
+
+def parse_mode_file(lines):
+    bg = None
+    keys = {}
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        k = k.strip().lower()
+        v = v.strip()
+        if k == "bg":
+            if not HEX_RE.match(v):
+                raise ValueError(f"Invalid bg color: {v!r}")
+            bg = v
+        elif k in KEY_TO_HID:
+            if not HEX_RE.match(v):
+                raise ValueError(f"Invalid color {v!r} for key {k!r}")
+            keys[k] = v
+        else:
+            raise ValueError(f"Unknown key: {k!r}")
+    return {"bg": bg, "keys": keys}
+
+
+def load_modes():
+    modes_dir = os.path.join(os.path.dirname(__file__), "modes")
+    if not os.path.isdir(modes_dir):
+        return {}
+    modes = {}
+    for fn in os.listdir(modes_dir):
+        if not fn.endswith(".txt"):
+            continue
+        name = fn[:-4]
+        path = os.path.join(modes_dir, fn)
+        try:
+            with open(path) as f:
+                mode = parse_mode_file(f)
+            modes[name] = mode
+        except (ValueError, OSError) as e:
+            print(f"Warning: cannot load mode '{name}': {e}", file=sys.stderr)
+    return modes
 
 
 def find_hidraw(vid=VENDOR_ID, pid=PRODUCT_ID):
@@ -249,33 +297,49 @@ class Keyboard:
         self._send_config(cfg)
 
 
-    def set_flash_game(self):
-        """Fondo azul (0000FF) con teclas WASD+ESC+Space+Shift+Arrows+Delete en rojo (FF0000).
 
-        2 escrituras en flash (modo + colores).
-        """
-        red_slots = [0, 46, 67, 68, 69, 88, 115, 59, 104, 125, 126, 127]
+# ── Aplicar modo personalizado desde archivo ─────────────────────────────────
 
-        self.set_mode_off()
-        cfg = bytearray(self.read_modes())
-        cfg[PER_KEY_MODE_IDX] = 1
-        cfg[CURRENT_MODE_IDX] = MODE_PER_KEY
-        cfg[CURRENT_MODE2_IDX] = 0x20
-        self._send_config(cfg)
-        time.sleep(0.25)
 
-        buf = bytearray(self.read_per_led(0))
-        c = COLORS_START
+def apply_mode(kb, mode):
+    buf = bytearray(kb.read_per_led(0))
+    c = COLORS_START
+
+    if mode["bg"]:
+        r, g, b = hex_to_rgb(mode["bg"])
         for i in range(LED_COUNT):
-            if i in red_slots:
-                buf[c + i] = 0x00                    # B
-                buf[c + LED_COUNT + i] = 0x00        # G
-                buf[c + LED_COUNT * 2 + i] = 0xFF    # R
-            else:
-                buf[c + i] = 0xFF                    # B
-                buf[c + LED_COUNT + i] = 0x00        # G
-                buf[c + LED_COUNT * 2 + i] = 0x00    # R
-        self._send_config(buf)
+            buf[c + i] = b
+            buf[c + LED_COUNT + i] = g
+            buf[c + LED_COUNT * 2 + i] = r
+
+    for key_name, color in mode["keys"].items():
+        hc = KEY_TO_HID[key_name]
+        r, g, b = hex_to_rgb(color)
+        if hc in HID_TO_SLOT:
+            slots = [HID_TO_SLOT[hc]]
+        elif hc in HID_TO_SLOT_AMBIGUOUS:
+            slots = HID_TO_SLOT_AMBIGUOUS[hc]
+        else:
+            continue
+        for slot in slots:
+            buf[c + slot] = b
+            buf[c + LED_COUNT + slot] = g
+            buf[c + LED_COUNT * 2 + slot] = r
+            if slot in WIDE_KEY_PAIRS:
+                p = WIDE_KEY_PAIRS[slot]
+                buf[c + p] = b
+                buf[c + LED_COUNT + p] = g
+                buf[c + LED_COUNT * 2 + p] = r
+
+    kb.set_mode_off()
+    cfg = bytearray(kb.read_modes())
+    cfg[PER_KEY_MODE_IDX] = 1
+    cfg[CURRENT_MODE_IDX] = MODE_PER_KEY
+    cfg[CURRENT_MODE2_IDX] = 0x20
+    kb._send_config(cfg)
+    time.sleep(0.25)
+
+    kb._send_config(buf)
 
 
 # ── Slot finder — detecta qué tecla se pulsa ──────────────────────────────────
@@ -353,20 +417,33 @@ def cmd_slot_find():
 
 # ── Interfaz de línea de comandos ─────────────────────────────────────────────
 
-def print_usage(prog):
+def print_usage(prog, custom_modes=None):
     print(f"Uso: {prog} <RRGGBB>                  LEDs personalizados (CM1)")
     print(f"     {prog} <modo> [<RRGGBB>]         Modo hardware")
     print(f"     {prog} slot <n> <RRGGBB>         LED individual")
     print(f"     {prog} slot                      Detectar slot al pulsar tecla")
-    print(f"     {prog} flash-game                Modo juego FPS")
     print(f"     {prog} off                       Apagar")
     print(f"     {prog} status                    Información")
     print("Modos hardware: " + ", ".join(sorted(BUILTIN_MODES)))
+    if custom_modes:
+        print("Modos personalizados: " + " ".join(sorted(custom_modes)))
+
+
+_CUSTOM_MODES = None
+
+
+def _get_custom_modes():
+    global _CUSTOM_MODES
+    if _CUSTOM_MODES is None:
+        _CUSTOM_MODES = load_modes()
+    return _CUSTOM_MODES
 
 
 def main():
+    custom_modes = _get_custom_modes()
+
     if len(sys.argv) < 2:
-        print_usage(sys.argv[0])
+        print_usage(sys.argv[0], custom_modes)
         return
 
     arg = sys.argv[1].lower()
@@ -392,16 +469,16 @@ def main():
             non_zero = sum(1 for i in range(COLORS_START, PAYLOAD_LEN) if perled[i])
             print(f"  bytes de color no-cero        = {non_zero}")
 
-        elif arg == "flash-game":
-            kb.set_flash_game()
-            print("Done")
-
         elif arg == "slot":
             if len(sys.argv) < 4:
                 print("Uso: slot <n> <RRGGBB>")
                 return
             r, g, b = hex_to_rgb(sys.argv[3])
             kb.set_slot(int(sys.argv[2]), r, g, b)
+            print("Done")
+
+        elif arg in custom_modes:
+            apply_mode(kb, custom_modes[arg])
             print("Done")
 
         elif arg in BUILTIN_MODES:

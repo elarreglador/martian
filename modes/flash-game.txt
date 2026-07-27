@@ -1,0 +1,17 @@
+# flash-game - FPS gaming preset
+# Blue background, WASD + Esc + arrows + Shift + Space + Del in red
+
+bg=0000FF
+
+esc=FF0000
+w=FF0000
+a=FF0000
+s=FF0000
+d=FF0000
+lshift=FF0000
+space=FF0000
+del=FF0000
+up=FF0000
+down=FF0000
+left=FF0000
+right=FF0000
