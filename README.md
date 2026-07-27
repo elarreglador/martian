@@ -162,3 +162,7 @@ Si quieres entender el protocolo, el mapeo de teclas, o contribuir al
 código, mira la documentación técnica:
 
 → [TECH-README.md](TECH-README.md)
+
+## Licencia
+
+GNU General Public License v3.0 — [LICENSE](LICENSE)
