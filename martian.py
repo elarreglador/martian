@@ -75,7 +75,7 @@ def parse_mode_file(lines):
             continue
         if "=" not in line:
             continue
-        k, v = line.split("=", 1)
+        k, v = line.rsplit("=", 1)
         k = k.strip().lower()
         v = v.strip()
         if k == "bg":

@@ -1,0 +1,72 @@
+# red-azul-naranja - Fondo rojo, letras+intro+num en azul, Fs+cursor en naranja
+
+bg=FF0000
+
+# Letras en azul
+a=0000FF
+b=0000FF
+c=0000FF
+d=0000FF
+e=0000FF
+f=0000FF
+g=0000FF
+h=0000FF
+i=0000FF
+j=0000FF
+k=0000FF
+l=0000FF
+m=0000FF
+n=0000FF
+o=0000FF
+p=0000FF
+q=0000FF
+r=0000FF
+s=0000FF
+t=0000FF
+u=0000FF
+v=0000FF
+w=0000FF
+x=0000FF
+y=0000FF
+z=0000FF
+
+# Números 1-0 en azul
+1=0000FF
+2=0000FF
+3=0000FF
+4=0000FF
+5=0000FF
+6=0000FF
+7=0000FF
+8=0000FF
+9=0000FF
+0=0000FF
+
+# Enter y Space en azul
+enter=0000FF
+space=0000FF
+
+# Numpad en azul
+num0=0000FF
+num1=0000FF
+num2=0000FF
+num3=0000FF
+num4=0000FF
+num5=0000FF
+num6=0000FF
+num7=0000FF
+num8=0000FF
+num9=0000FF
+numenter=0000FF
+num+=0000FF
+num-=0000FF
+num/=0000FF
+num*=0000FF
+num.=0000FF
+numlk=0000FF
+
+# Cursores en naranja
+up=FF8800
+down=FF8800
+left=FF8800
+right=FF8800
