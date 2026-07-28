@@ -3,10 +3,57 @@
 import os
 import subprocess
 import sys
+from tkinter import colorchooser
+import tkinter as tk
 
 from ..keyboard import Keyboard, apply_mode
+from ..colors import hex_to_rgb
 from ..modes import BUILTIN_MODES, load_modes
 from ..protocol import find_hidraw
+
+# Color palettes based on CSS color standards
+COLOR_PALETTES = {
+    "Basics": [
+        ("Red", "FF0000"),
+        ("Green", "008000"),
+        ("Blue", "0000FF"),
+        ("Yellow", "FFFF00"),
+        ("Cyan", "00FFFF"),
+        ("Magenta", "FF00FF"),
+        ("White", "FFFFFF"),
+        ("Black", "000000"),
+    ],
+    "Pastel": [
+        ("Pastel Pink", "FFB3BA"),
+        ("Pastel Orange", "FFDFBA"),
+        ("Pastel Yellow", "FFFFBA"),
+        ("Pastel Green", "BAE1BA"),
+        ("Pastel Blue", "BAC7FF"),
+        ("Pastel Purple", "E1BAFF"),
+        ("Pastel Peach", "FFD6BA"),
+        ("Pastel Mint", "BAFFBA"),
+    ],
+    "Cool": [
+        ("Sky Blue", "87CEEB"),
+        ("Deep Sky Blue", "00BFFF"),
+        ("Dodger Blue", "1E90FF"),
+        ("Cornflower Blue", "6495ED"),
+        ("Turquoise", "40E0D0"),
+        ("Dark Turquoise", "00CED1"),
+        ("Cyan", "00FFFF"),
+        ("Medium Slate Blue", "7B68EE"),
+    ],
+    "Warm": [
+        ("Red", "FF0000"),
+        ("Orange Red", "FF4500"),
+        ("Orange", "FFA500"),
+        ("Dark Orange", "FF8C00"),
+        ("Tomato", "FF6347"),
+        ("Coral", "FF7F50"),
+        ("Light Salmon", "FFA07A"),
+        ("Gold", "FFD700"),
+    ],
+}
 
 def _make_tray_icon():
     try:
@@ -26,6 +73,18 @@ def _make_tray_icon():
     # Flame (yellow)
     d.polygon([(11, 22), (16, 31), (21, 22)], fill=(255, 200, 0, 255))
     return img
+
+def _apply_color_hex(kbd, hex_color):
+    """Aplica un color en formato hex al teclado."""
+    try:
+        r, g, b = hex_to_rgb(hex_color)
+        kbd.set_color(r, g, b)
+    except Exception:
+        pass
+
+def _make_color_callback(kbd, hex_color):
+    """Crea un callback para aplicar un color específico."""
+    return lambda icon, item: _apply_color_hex(kbd, hex_color)
 
 def _request_sudo():
     try:
@@ -86,6 +145,15 @@ def cmd_tray():
     def _make_cb(name):
         return lambda icon, item: _apply(name)
 
+    def _pick_color():
+        """Abre un diálogo de selección de color nativo."""
+        root = tk.Tk()
+        root.withdraw()
+        color = colorchooser.askcolor(color="#FF0000", title="Select Color")
+        root.destroy()
+        if color[1]:
+            _apply_color_hex(kbd, color[1].lstrip("#"))
+
     def _make_menu():
         modes = load_modes()
         flash_items = [
@@ -98,12 +166,30 @@ def cmd_tray():
             *flash_items if flash_items else [pystray.MenuItem("(ninguno)", None, enabled=False)]
         )
         fw_sub = pystray.Menu(*fw_items)
+
+        # Build One Color submenu with palette selector
+        palette_items = [pystray.MenuItem("Palette", lambda icon, item: _pick_color())]
+        palette_items.append(pystray.Menu.SEPARATOR)
+
+        for palette_name in ["Basics", "Pastel", "Cool", "Warm"]:
+            colors = COLOR_PALETTES[palette_name]
+            color_items = [
+                pystray.MenuItem(name, _make_color_callback(kbd, hex_val))
+                for name, hex_val in colors
+            ]
+            palette_items.append(
+                pystray.MenuItem(palette_name, pystray.Menu(*color_items))
+            )
+
+        one_color_menu = pystray.Menu(*palette_items)
+
         return pystray.Menu(
             pystray.MenuItem("Flash Modes", flash_sub),
             pystray.MenuItem("Firmware Modes", fw_sub),
+            pystray.MenuItem("One Color", one_color_menu),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("LEDs Off", lambda icon, item: kbd.set_mode_off()),
-            pystray.MenuItem("Salir", lambda icon, item: icon.stop()),
+            pystray.MenuItem("Exit", lambda icon, item: icon.stop()),
         )
 
     icon = pystray.Icon("martian", icon_img, "Martian Flash Controller", _make_menu())
