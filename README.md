@@ -88,7 +88,7 @@ Pone un icono (cohete  ) en la bandeja con menús para cambiar de modo y
 apagar LEDs. Requiere `pystray` y `Pillow`:
 
 ```bash
-pip install pystray Pillow
+pip install -r requirements.txt
 ```
 
 En GNOME Wayland necesitas la extensión
