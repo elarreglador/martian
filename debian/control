@@ -1,0 +1,26 @@
+Source: martian
+Section: hardware
+Priority: optional
+Maintainer: David <elarreglador@canonical.com>
+Build-Depends: debhelper (>= 11), python3-setuptools, python3-all, dh-python
+Standards-Version: 4.5.0
+Homepage: https://github.com/elarreglador/martian
+Vcs-Git: https://github.com/elarreglador/martian.git
+Vcs-Browser: https://github.com/elarreglador/martian
+
+Package: martian
+Architecture: all
+Depends: ${python3:Depends}, python3-pil, python3-pystray, ${misc:Depends}
+Description: RGB controller for Mars Gaming MK-Revo Pro keyboard
+ Martian is a lightweight utility to control the LED illumination of the
+ Mars Gaming MK-Revo Pro keyboard (258a:0016) on Linux.
+ .
+ Features:
+  - Full keyboard RGB control (all keys, per-key, individual LEDs)
+  - Hardware modes (spectrum, breathing, reactive, etc.)
+  - System tray integration with color picker
+  - Custom color profiles
+  - No Windows software required, no OpenRGB needed
+ .
+ This package is useful for gamers, developers, and Linux enthusiasts who
+ want to customize their keyboard lighting on Ubuntu/Debian.

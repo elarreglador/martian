@@ -1,0 +1,9 @@
+martian (1.0.0-1ubuntu1) jammy; urgency=medium
+
+  * Initial release
+  * Full RGB control for Mars Gaming MK-Revo Pro keyboard
+  * System tray integration with color picker
+  * Support for hardware modes and custom profiles
+  * udev rules for non-root access
+
+ -- David <elarreglador@canonical.com>  Tue, 28 Jul 2026 15:00:00 +0000
