@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 import unittest
-from martian import (
-    hex_to_rgb,
-    parse_mode_file,
-    LED_COUNT,
-    PAYLOAD_LEN,
-    COLORS_START,
-    BUILTIN_MODES,
-)
+from martian.colors import hex_to_rgb
+from martian.modes import parse_mode_file, BUILTIN_MODES
+from martian.protocol import LED_COUNT, PAYLOAD_LEN, COLORS_START
 from slots import (
     HID_TO_SLOT,
     HID_TO_SLOT_AMBIGUOUS,
