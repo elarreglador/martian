@@ -94,13 +94,18 @@ pip install pystray Pillow
 En GNOME Wayland necesitas la extensión
 [AppIndicator](https://extensions.gnome.org/extension/615/appindicator-support/).
 
-![Menú principal del icono en la bandeja](images/tray-menu.png)
-![Submenú de modos](images/tray-submenu.png)
+![Menú principal del icono en la bandeja](images/1.png)
 
-##  Modos personalizados (archivos .txt)
+![Menú principal del icono en la bandeja](images/2.png)
+
+![Menú principal del icono en la bandeja](images/3.png)
+
+![Menú principal del icono en la bandeja](images/4.png)
+
+## Modos personalizados (archivos .txt)
 
 Puedes crear tus propias configuraciones de color en la carpeta `modes/`.
-Cada archivo `.txt` es un modo nuevo que aparece como comando.
+Cada archivo `.txt` es un modo nuevo que aparece como comando y en el menu desplegable 'Flash Modes'
 
 ### Modos incluidos
 
