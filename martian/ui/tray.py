@@ -190,19 +190,35 @@ def cmd_tray():
             win = tk.Tk()
             win.title("Acerca de Martian")
             win.resizable(False, False)
+            win.attributes("-type", "dialog")
 
-            frame = tk.Frame(win, padx=20, pady=15)
+            frame = tk.Frame(win, padx=15, pady=15)
             frame.pack()
 
-            tk.Label(frame, text=f"Martian v{__version__}", font=("", 14, "bold")).pack()
-            tk.Label(frame, text="David Moreno Bolívar (elarreglador)").pack(pady=(5, 0))
+            img = _make_tray_icon()
+            if img:
+                from PIL import ImageTk
+                photo = ImageTk.PhotoImage(img)
+                tk.Label(frame, image=photo).pack(pady=(0, 5))
+
+            tk.Label(frame, text=f"Martian v{__version__}",
+                     font=("", 12, "bold")).pack()
+            tk.Label(frame, text="por David Moreno Bolívar\n(elarreglador)",
+                     justify="center").pack(pady=(5, 0))
 
             link = tk.Label(frame, text="github.com/elarreglador/martian",
-                            fg="blue", cursor="hand2")
+                            fg="#0066CC", cursor="hand2", font=("", 9))
             link.pack(pady=(5, 10))
-            link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/elarreglador/martian"))
+            link.bind("<Button-1>", lambda e: webbrowser.open(
+                "https://github.com/elarreglador/martian"))
 
-            tk.Button(frame, text="Cerrar", command=win.destroy).pack()
+            tk.Button(frame, text="Cerrar", command=win.destroy,
+                      padx=20, cursor="hand2").pack()
+
+            win.update_idletasks()
+            x = (win.winfo_screenwidth() - win.winfo_reqwidth()) // 2
+            y = (win.winfo_screenheight() - win.winfo_reqheight()) // 2
+            win.geometry(f"+{x}+{y}")
 
             win.mainloop()
 
