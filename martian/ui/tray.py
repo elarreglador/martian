@@ -184,14 +184,27 @@ def cmd_tray():
         one_color_menu = pystray.Menu(*palette_items)
 
         def _show_about():
+            import webbrowser
             from .. import __version__
-            subprocess.run(
-                [
-                    "zenity", "--info",
-                    "--title=Acerca de Martian",
-                    f"--text=Martian v{__version__}\nAuthor: David Moreno Bolívar (elarreglador)\nGitHub: https://github.com/elarreglador/martian",
-                ]
-            )
+
+            win = tk.Tk()
+            win.title("Acerca de Martian")
+            win.resizable(False, False)
+
+            frame = tk.Frame(win, padx=20, pady=15)
+            frame.pack()
+
+            tk.Label(frame, text=f"Martian v{__version__}", font=("", 14, "bold")).pack()
+            tk.Label(frame, text="David Moreno Bolívar (elarreglador)").pack(pady=(5, 0))
+
+            link = tk.Label(frame, text="github.com/elarreglador/martian",
+                            fg="blue", cursor="hand2")
+            link.pack(pady=(5, 10))
+            link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/elarreglador/martian"))
+
+            tk.Button(frame, text="Cerrar", command=win.destroy).pack()
+
+            win.mainloop()
 
         return pystray.Menu(
             pystray.MenuItem("Flash Modes", flash_sub),
