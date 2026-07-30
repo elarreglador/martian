@@ -13,10 +13,10 @@ Martian controla la iluminación LED del teclado **Mars Gaming MK-Revo Pro**
 sudo add-apt-repository ppa:elarreglador/ppa
 sudo apt update
 sudo apt install martian
+sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-Desconecta y reconecta el teclado (o reinicia). Ya puedes usar `martian`
-desde la terminal.
+Ya puedes usar `martian` (terminal o icono en la bandeja del sistema).
 
 ### Desde el código fuente
 
