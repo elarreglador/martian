@@ -1,5 +1,5 @@
 Source: martian
-Section: hardware
+Section: utils
 Priority: optional
 Maintainer: David Moreno Bolívar <elarreglador@protonmail.com>
 Build-Depends: debhelper (>= 11), python3-setuptools, python3-all, dh-python
