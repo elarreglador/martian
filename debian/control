@@ -1,7 +1,7 @@
 Source: martian
 Section: hardware
 Priority: optional
-Maintainer: David <elarreglador@canonical.com>
+Maintainer: David Moreno Bolívar <elarreglador@protonmail.com>
 Build-Depends: debhelper (>= 11), python3-setuptools, python3-all, dh-python
 Standards-Version: 4.5.0
 Homepage: https://github.com/elarreglador/martian
