@@ -1,3 +1,11 @@
+martian (1.1.0-1) unstable; urgency=medium
+
+  * New version: 1.1.0
+  * Add desktop entry for menu launcher
+  * Add about command and tray menu item
+
+ -- David Moreno Bolívar <elarreglador@protonmail.com>  Thu, 30 Jul 2026 20:27:20 +0200
+
 martian (1.0.0-1ubuntu1) jammy; urgency=medium
 
   * Initial release
