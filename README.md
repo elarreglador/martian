@@ -7,6 +7,19 @@ Martian controla la iluminación LED del teclado **Mars Gaming MK-Revo Pro**
 
 ## ⚡ Inicio rápido
 
+### Desde el PPA (recomendado)
+
+```bash
+sudo add-apt-repository ppa:elarreglador/ppa
+sudo apt update
+sudo apt install martian
+```
+
+Desconecta y reconecta el teclado (o reinicia). Ya puedes usar `martian`
+desde la terminal.
+
+### Desde el código fuente
+
 ```bash
 git clone https://github.com/elarreglador/martian.git ~/dev/martian
 cd ~/dev/martian
