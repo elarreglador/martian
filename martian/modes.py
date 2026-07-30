@@ -51,7 +51,7 @@ def parse_mode_file(lines):
 
 def load_modes():
     """Carga todos los modos personalizados desde la carpeta modes/."""
-    modes_dir = os.path.join(os.path.dirname(__file__), "..", "modes")
+    modes_dir = os.path.join(os.path.dirname(__file__), "modes")
     if not os.path.isdir(modes_dir):
         return {}
     modes = {}
