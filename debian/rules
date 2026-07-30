@@ -20,3 +20,5 @@ override_dh_install:
 	dh_install
 	# Install udev rules
 	install -D -m 644 60-mkrevopro.rules $(CURDIR)/debian/martian/etc/udev/rules.d/60-mkrevopro.rules
+	# Install desktop entry
+	install -D -m 644 debian/martian.desktop $(CURDIR)/debian/martian/usr/share/applications/martian.desktop
