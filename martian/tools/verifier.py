@@ -8,7 +8,7 @@ import time
 
 from ..keyboard import Keyboard
 from ..protocol import LED_COUNT, COLORS_START, PER_KEY_MODE_IDX, CURRENT_MODE_IDX, CURRENT_MODE2_IDX, MODE_PER_KEY
-from slots import WIDE_KEY_PAIRS, HID_TO_SLOT, KEY_TO_HID
+from martian.slots import WIDE_KEY_PAIRS, HID_TO_SLOT, KEY_TO_HID
 
 # Re-use from scanner
 COLOR_CIRCLES = ["\U0001f534", "\U0001f535", "\U0001f7e1", "\U0001f7e2", "\U0001f7e3"]

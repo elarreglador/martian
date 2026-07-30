@@ -3,7 +3,7 @@ import unittest
 from martian.colors import hex_to_rgb
 from martian.modes import parse_mode_file, BUILTIN_MODES
 from martian.protocol import LED_COUNT, PAYLOAD_LEN, COLORS_START
-from slots import (
+from martian.slots import (
     HID_TO_SLOT,
     HID_TO_SLOT_AMBIGUOUS,
     MODIFIER_SLOTS,

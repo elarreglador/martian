@@ -12,7 +12,7 @@ from .protocol import (
 )
 from .colors import hex_to_rgb
 from .modes import BUILTIN_MODES
-from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, WIDE_KEY_PAIRS, KEY_TO_HID
+from martian.slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, WIDE_KEY_PAIRS, KEY_TO_HID
 
 class Keyboard:
     """Comunicación de bajo nivel con el teclado Mars Gaming MK-Revo Pro."""

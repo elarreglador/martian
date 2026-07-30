@@ -4,7 +4,7 @@ import os
 import sys
 
 from ..protocol import find_keyboard_hidraw
-from slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS
+from martian.slots import HID_TO_SLOT, HID_TO_SLOT_AMBIGUOUS, MODIFIER_SLOTS
 
 def cmd_slot_find():
     """Espera una pulsación de tecla y muestra su número de slot."""

@@ -4,7 +4,7 @@ import os
 import sys
 
 from .colors import HEX_RE
-from slots import KEY_TO_HID
+from martian.slots import KEY_TO_HID
 
 # Modos hardware que ejecuta el chip internamente (no desgastan flash)
 BUILTIN_MODES = {
