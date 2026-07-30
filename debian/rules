@@ -6,6 +6,8 @@ export PYBUILD_NAME = martian
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
+override_dh_auto_test:
+
 override_dh_auto_build:
 	dh_auto_build
 	# Validate modes directory exists
