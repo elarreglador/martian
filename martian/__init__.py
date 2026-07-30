@@ -1,6 +1,6 @@
 """Martian: RGB controller for Mars Gaming MK-Revo Pro keyboard on Linux."""
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 from .keyboard import Keyboard, apply_mode
 from .colors import hex_to_rgb, rgb_to_hex
