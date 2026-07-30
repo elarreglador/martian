@@ -183,12 +183,24 @@ def cmd_tray():
 
         one_color_menu = pystray.Menu(*palette_items)
 
+        def _show_about():
+            from .. import __version__
+            subprocess.run(
+                [
+                    "zenity", "--info",
+                    "--title=Acerca de Martian",
+                    f"--text=Martian v{__version__}\nAuthor: David Moreno Bolívar (elarreglador)\nGitHub: https://github.com/elarreglador/martian",
+                ]
+            )
+
         return pystray.Menu(
             pystray.MenuItem("Flash Modes", flash_sub),
             pystray.MenuItem("Firmware Modes", fw_sub),
             pystray.MenuItem("One Color", one_color_menu),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("LEDs Off", lambda icon, item: kbd.set_mode_off()),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("About", lambda icon, item: _show_about()),
             pystray.MenuItem("Exit", lambda icon, item: icon.stop()),
         )
 

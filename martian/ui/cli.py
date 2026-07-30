@@ -13,11 +13,18 @@ def print_usage(prog, custom_modes=None):
     print(f"     {prog} slot <n> <RRGGBB>         LED individual")
     print(f"     {prog} slot                      Detectar slot al pulsar tecla")
     print(f"     {prog} tray                      Icono en bandeja")
+    print(f"     {prog} about                     Acerca de")
     print(f"     {prog} off                       Apagar")
     print(f"     {prog} status                    Información")
     print("Modos hardware: " + ", ".join(sorted(BUILTIN_MODES)))
     if custom_modes:
         print("Modos personalizados: " + " ".join(sorted(custom_modes)))
+
+def cmd_about():
+    from .. import __version__
+    print(f"Martian v{__version__}")
+    print("Author: David Moreno Bolívar (elarreglador)")
+    print("GitHub: https://github.com/elarreglador/martian")
 
 def main():
     """Main CLI dispatcher."""
@@ -38,6 +45,10 @@ def main():
 
     if arg == "tray":
         cmd_tray()
+        return
+
+    if arg == "about":
+        cmd_about()
         return
 
     kb = Keyboard()
