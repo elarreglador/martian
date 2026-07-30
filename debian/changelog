@@ -1,3 +1,10 @@
+martian (1.1.1-1) unstable; urgency=medium
+
+  * Improve about dialog: icon, native styling, centered
+  * Clickable GitHub link opens browser
+
+ -- David Moreno Bolívar <elarreglador@protonmail.com>  Thu, 30 Jul 2026 20:58:53 +0200
+
 martian (1.1.0-1) unstable; urgency=medium
 
   * New version: 1.1.0

@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="martian",
-    version="1.1.0",
+    version="1.1.1",
     author="David",
     description="RGB controller for Mars Gaming MK-Revo Pro keyboard on Linux",
     long_description=long_description,
