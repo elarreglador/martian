@@ -12,6 +12,8 @@ override_dh_auto_build:
 	dh_auto_build
 	# Validate modes directory exists
 	test -d martian/modes
+	# Generate app icon
+	python3 scripts/make_icon.py martian.png
 
 override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
@@ -22,3 +24,5 @@ override_dh_install:
 	install -D -m 644 60-mkrevopro.rules $(CURDIR)/debian/martian/etc/udev/rules.d/60-mkrevopro.rules
 	# Install desktop entry
 	install -D -m 644 debian/martian.desktop $(CURDIR)/debian/martian/usr/share/applications/martian.desktop
+	# Install app icon
+	install -D -m 644 martian.png $(CURDIR)/debian/martian/usr/share/icons/hicolor/128x128/apps/martian.png

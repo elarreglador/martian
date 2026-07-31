@@ -55,23 +55,24 @@ COLOR_PALETTES = {
     ],
 }
 
-def _make_tray_icon():
+def _make_tray_icon(size=32):
     try:
         from PIL import Image, ImageDraw
     except ImportError:
         return None
-    s = 32
+    k = size / 32.0
+    s = size
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     # Rocket body (cyan cone)
-    d.polygon([(16, 1), (5, 22), (27, 22)], fill=(0, 180, 255, 255))
+    d.polygon([(16*k, 1*k), (5*k, 22*k), (27*k, 22*k)], fill=(0, 180, 255, 255))
     # Window (white circle)
-    d.ellipse([12, 8, 20, 16], fill=(255, 255, 255, 255))
+    d.ellipse([12*k, 8*k, 20*k, 16*k], fill=(255, 255, 255, 255))
     # Fins (orange)
-    d.polygon([(5, 22), (1, 28), (7, 24)], fill=(255, 120, 0, 255))
-    d.polygon([(27, 22), (31, 28), (25, 24)], fill=(255, 120, 0, 255))
+    d.polygon([(5*k, 22*k), (1*k, 28*k), (7*k, 24*k)], fill=(255, 120, 0, 255))
+    d.polygon([(27*k, 22*k), (31*k, 28*k), (25*k, 24*k)], fill=(255, 120, 0, 255))
     # Flame (yellow)
-    d.polygon([(11, 22), (16, 31), (21, 22)], fill=(255, 200, 0, 255))
+    d.polygon([(11*k, 22*k), (16*k, 31*k), (21*k, 22*k)], fill=(255, 200, 0, 255))
     return img
 
 def _apply_color_hex(kbd, hex_color):
